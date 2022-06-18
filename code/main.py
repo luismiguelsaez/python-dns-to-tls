@@ -11,7 +11,7 @@ def clientHandler(clientSocket:socket.socket):
   requestData = clientSocket.recv(1024)
   logger.debug("Got request data: {}".format(requestData))
 
-  upstreamServerData = upstreamTLSSendQuery("1.1.1.1", 853, requestData)
+  upstreamServerData = upstreamTLSSendQuery(upstreamDNSServer, int(upstreamDNSPort), requestData)
 
   clientSocket.send(upstreamServerData)
 
@@ -48,7 +48,7 @@ def upstreamSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
   return data
 
 bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
-bindPort = 2553 if "BIND_PORT" not in environ else environ["BIND_PORT"]
+bindPort = "2553" if "BIND_PORT" not in environ else environ["BIND_PORT"]
 upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else environ["UPSTREAM_DNS_SERVER"]
 upstreamDNSPort = "853" if "UPSTREAM_DNS_PORT" not in environ else environ["UPSTREAM_DNS_PORT"]
 logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"]
@@ -70,7 +70,7 @@ def main():
   TCPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
   try:
-    TCPServerSocket.bind((bindIP, bindPort))
+    TCPServerSocket.bind((bindIP, int(bindPort)))
     TCPServerSocket.listen()
   except Exception:
     logger.exception("Failed to bind socket {}:{}".format(bindIP,bindPort))

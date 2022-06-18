@@ -1,9 +1,15 @@
 
 
+## Build
+
+```bash
+docker build -t dnsproxy:latest .
+```
+
 ## Run
 
 ```bash
-python code/main.py
+docker run --name dnsproxy -d -p 127.0.0.1:2553:2553 dnsproxy:latest
 ```
 
 ## Test
@@ -27,7 +33,7 @@ python code/test/client.py
 2. I can think in two different implementations
   
   - DNS proxy as a sidecar for the service that is going to use it, so we can avoid the possibility of the traffict client->proxy to be intercepted
-  - A service to be consumed from different services in the infrastructure. In that case, as the traffic would be higher, I would implement a caching solution based on Redis, for instance
+  - A service to be consumed from different services in the infrastructure. In that case, as the traffic would be higher, I would implement a caching solution based on Redis, for instance, which can handle TTL easily
 
 3. Improvements
 
