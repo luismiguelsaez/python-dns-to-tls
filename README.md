@@ -9,7 +9,7 @@ python code/main.py
 ## Test
 
 ```bash
-dig -p 20001 @127.0.0.1 www.google.com +tcp
+dig -p 2553 @127.0.0.1 www.google.com +tcp
 python code/test/client.py
 ```
 

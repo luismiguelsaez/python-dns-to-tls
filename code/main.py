@@ -47,9 +47,8 @@ def upstreamSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
   return data
 
-
 bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
-bindPort = "2553" if "BIND_PORT" not in environ else environ["BIND_PORT"]
+bindPort = 2553 if "BIND_PORT" not in environ else environ["BIND_PORT"]
 upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else environ["UPSTREAM_DNS_SERVER"]
 upstreamDNSPort = "853" if "UPSTREAM_DNS_PORT" not in environ else environ["UPSTREAM_DNS_PORT"]
 logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"]
@@ -64,25 +63,30 @@ logging.basicConfig(
     
 logger = logging.getLogger()
 
+def main():
 
-# Create sockets
-#UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-TCPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+  # Create sockets
+  #UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+  TCPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
-try:
-  TCPServerSocket.bind((bindIP, bindPort))
-  TCPServerSocket.listen()
-except Exception:
-  logger.exception("Failed to bind socket {}:{}".format(bindIP,bindPort))
+  try:
+    TCPServerSocket.bind((bindIP, bindPort))
+    TCPServerSocket.listen()
+  except Exception:
+    logger.exception("Failed to bind socket {}:{}".format(bindIP,bindPort))
 
-logger.info("Server listening on {}:{}".format(bindIP,bindPort))
+  logger.info("Server listening on {}:{}".format(bindIP,bindPort))
 
-# Handle incoming connections
-while(True):
-    
-  conn, addr = TCPServerSocket.accept()
-  logger.debug("Client connected: {}".format(addr))
-  client_handler = threading.Thread(target = clientHandler, args=(conn,))
-  client_handler.start()
+  # Handle incoming connections
+  while(True):
+      
+    conn, addr = TCPServerSocket.accept()
+    logger.debug("Client connected: {}".format(addr))
+    client_handler = threading.Thread(target = clientHandler, args=(conn,))
+    client_handler.start()
 
-TCPServerSocket.close()
+  TCPServerSocket.close()
+
+
+if __name__ == "__main__":
+  main()
