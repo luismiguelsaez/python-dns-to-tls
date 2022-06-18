@@ -21,8 +21,7 @@ python code/test/client.py
 
 ## Comments
 
-- I could have used `socketserver`, that implements a higher level server
-- 
+- I could have used `socketserver`, that implements a higher level server, but I found more funny to go with `socket`
 
 ## Answers to questions
 

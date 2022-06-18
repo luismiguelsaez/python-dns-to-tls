@@ -1,3 +1,4 @@
+import signal
 import sys
 import socket
 import threading
@@ -47,11 +48,12 @@ def upstreamSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
   return data
 
+
 bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
 bindPort = "2553" if "BIND_PORT" not in environ else environ["BIND_PORT"]
 upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else environ["UPSTREAM_DNS_SERVER"]
 upstreamDNSPort = "853" if "UPSTREAM_DNS_PORT" not in environ else environ["UPSTREAM_DNS_PORT"]
-logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"]
+logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"].upper()
 
 logFormat = "%(levelname)s %(asctime)s - %(message)s"
 
@@ -60,7 +62,7 @@ logging.basicConfig(
                     format = logFormat, 
                     level = logLevel
                     )
-    
+
 logger = logging.getLogger()
 
 def main():
@@ -68,6 +70,7 @@ def main():
   # Create sockets
   #UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
   TCPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+  TCPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
   try:
     TCPServerSocket.bind((bindIP, int(bindPort)))
@@ -85,7 +88,6 @@ def main():
     client_handler = threading.Thread(target = clientHandler, args=(conn,))
     client_handler.start()
 
-  TCPServerSocket.close()
 
 
 if __name__ == "__main__":
