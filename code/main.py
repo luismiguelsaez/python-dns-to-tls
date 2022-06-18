@@ -48,18 +48,6 @@ def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
   return errCode, data
 
 
-def upstreamSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
-
-  server = (serverIP, serverPort)
-  
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.connect(server)
-  sock.send(query)  	
-  data = sock.recv(1024)
-
-  return data
-
-
 bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
 bindPort = "2553" if "BIND_PORT" not in environ else environ["BIND_PORT"]
 upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else environ["UPSTREAM_DNS_SERVER"]
