@@ -7,7 +7,7 @@ import logging
 from os import environ
 
 
-def clientHandler(clientSocket:socket.socket):
+def tcpClientHandler(clientSocket:socket.socket):
 
   requestData = clientSocket.recv(1024)
   logger.debug("Got request data: {}".format(requestData))
@@ -55,6 +55,8 @@ upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else envir
 upstreamDNSPort = "853" if "UPSTREAM_DNS_PORT" not in environ else environ["UPSTREAM_DNS_PORT"]
 logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"].upper()
 
+mode = "tcp"
+
 logFormat = "%(levelname)s %(asctime)s - %(message)s"
 
 logging.basicConfig(
@@ -68,11 +70,12 @@ logger = logging.getLogger()
 def main():
 
   # Create sockets
-  #UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+  UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
   TCPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
   TCPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
   try:
+    UDPServerSocket.bind((bindIP, int(bindPort)))
     TCPServerSocket.bind((bindIP, int(bindPort)))
     TCPServerSocket.listen()
   except Exception:
@@ -82,10 +85,12 @@ def main():
 
   # Handle incoming connections
   while(True):
-      
+    
+    #udpMessage, udpAddress = UDPServerSocket.recvfrom(1024)
+
     conn, addr = TCPServerSocket.accept()
     logger.debug("Client connected: {}".format(addr))
-    client_handler = threading.Thread(target = clientHandler, args=(conn,))
+    client_handler = threading.Thread(target = tcpClientHandler, args=(conn,))
     client_handler.start()
 
 
