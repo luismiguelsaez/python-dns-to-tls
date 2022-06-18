@@ -1,4 +1,3 @@
-import signal
 import sys
 import socket
 import threading
