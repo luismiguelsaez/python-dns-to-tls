@@ -12,29 +12,41 @@ def tcpClientHandler(clientSocket:socket.socket):
   requestData = clientSocket.recv(1024)
   logger.debug("Got request data: {}".format(requestData))
 
-  upstreamServerData = upstreamTLSSendQuery(upstreamDNSServer, int(upstreamDNSPort), requestData)
+  upstreamQueryErr, upstreamServerData = upstreamTLSSendQuery(upstreamDNSServer, int(upstreamDNSPort), requestData)
 
-  clientSocket.send(upstreamServerData)
-
-  clientSocket.close()
-  logger.debug("Connection closed")
-
+  if upstreamQueryErr == 0:
+    clientSocket.send(upstreamServerData)
+    clientSocket.close()
+    logger.debug("Connection closed")
+  else:
+    clientSocket.close()
+    logger.error("Error while connecting to upstream DNS server")
 
 def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
+  errCode = 0
+
   server = (serverIP, serverPort)
 
-  context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-  context.load_verify_locations('/etc/ssl/cert.pem')
-  context.check_hostname = False
+  try:
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.load_verify_locations('/etc/ssl/cert.pem')
+    context.check_hostname = False
+  except Exception as sslConExc:
+    logger.exception("Error while creating SSL context: {}".format(sslConExc))
+    errCode = 1
 
-  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-    with context.wrap_socket(sock) as ssock:
-      ssock.connect(server)
-      ssock.send(query)
-      data = ssock.recv(1024)
+  try:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+      with context.wrap_socket(sock) as ssock:
+        ssock.connect(server)
+        ssock.send(query)
+        data = ssock.recv(1024)
+  except Exception as exc:
+    logger.exception("Error while connecting to upstream DNS server [{}{}]: {}".format(serverIP, serverPort, exc))
+    errCode = 1
 
-  return data
+  return errCode, data
 
 
 def upstreamSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
