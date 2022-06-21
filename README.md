@@ -24,6 +24,7 @@ python code/test/client.py
 - I could have used `socketserver`, that implements a higher level server, but I found more funny to go with `socket`
 - Added a small script in `code/test` folder, that can be implemented as part of the server testing stage in the CICD pipeline
 - Added some comments in the code
+- The `wrap_socket` being used initially hasn't SNI support
 
 ## Answers to questions
 

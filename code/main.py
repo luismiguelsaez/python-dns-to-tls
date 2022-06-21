@@ -35,23 +35,29 @@ def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
   try:
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_verify_locations('/etc/ssl/cert.pem')
-    context.check_hostname = False
+    context.check_hostname = True
   except Exception as sslConExc:
     logger.exception("Error while creating SSL context: {}".format(sslConExc))
     errCode = 1
 
   # Wrap the socket so it is encapsulated in an SSL connection
-  try:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-      with context.wrap_socket(sock=sock) as ssock:
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    with context.wrap_socket(sock=sock,server_hostname=serverIP) as ssock:
+      try:
         ssock.connect(server)
+        logger.debug("Upstream server hostname is: {}".format(ssock.server_hostname))
         ssock.send(query)
+      except ssl.SSLCertVerificationError as sslCertVerifyExc:
+        logger.exception("Error while verifying upstream server certificate [{}:{}]: {}".format(serverIP, serverPort, sslCertVerifyExc))
+        errCode = 2
+      except Exception as exc:
+        logger.exception("Error while connecting to upstream DNS server [{}:{}]: {}".format(serverIP, serverPort, exc))
+        errCode = 1
+      finally:
         data = ssock.recv(1024)
-  except Exception as exc:
-    logger.exception("Error while connecting to upstream DNS server [{}{}]: {}".format(serverIP, serverPort, exc))
-    errCode = 1
-
+  
   return errCode, data
+
 
 # Look for environment variables and set default values
 bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
