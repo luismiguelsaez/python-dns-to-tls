@@ -15,7 +15,7 @@ docker run --name dnsproxy -d -p 2553:2553 -e LOG_LEVEL=DEBUG -e BIND_IP=0.0.0.0
 ## Test
 
 ```bash
-dig -p 2553 @127.0.0.1 www.google.com +tcp
+dig -p 2553 @127.0.0.1 www.google.com +tcp +short
 python code/test/client.py
 ```
 
