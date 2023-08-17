@@ -33,7 +33,7 @@ def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
   # Create SSL context, enforcing TLS 1.2 as protocol
   try:
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_3)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_verify_locations('/etc/ssl/cert.pem')
     context.check_hostname = True
   except Exception as sslConExc:
