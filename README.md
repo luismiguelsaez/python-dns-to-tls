@@ -9,7 +9,7 @@ docker build -t dnsproxy:latest .
 ## Run
 
 ```bash
-docker run --name dnsproxy -it --rm -p 2553:2553 -e LOG_LEVEL=DEBUG -e BIND_IP=0.0.0.0 dnsproxy:latest
+docker run --name dnsproxy -d -p 2553:2553 -e LOG_LEVEL=DEBUG -e BIND_IP=0.0.0.0 dnsproxy:latest
 ```
 
 ## Test

@@ -3,10 +3,10 @@ import socket
 import threading
 import ssl
 import logging
-from os import environ
+from os import getenv as osgetenv
 
 # Handle the client connection
-def tcpClientHandler(clientSocket:socket.socket):
+def tcpClientHandler(clientSocket: socket.socket)->None:
 
   # Read the data from the client oppened socket
   requestData = clientSocket.recv(1024)
@@ -60,19 +60,19 @@ def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
 
 # Look for environment variables and set default values
-bindIP = "127.0.0.1" if "BIND_IP" not in environ else environ["BIND_IP"]
-bindPort = "2553" if "BIND_PORT" not in environ else environ["BIND_PORT"]
-upstreamDNSServer = "1.1.1.1" if "UPSTREAM_DNS_SERVER" not in environ else environ["UPSTREAM_DNS_SERVER"]
-upstreamDNSPort = "853" if "UPSTREAM_DNS_PORT" not in environ else environ["UPSTREAM_DNS_PORT"]
-logLevel = "INFO" if "LOG_LEVEL" not in environ else environ["LOG_LEVEL"].upper()
+bindIP = osgetenv("BIND_IP", "127.0.0.1")
+bindPort = osgetenv("BIND_PORT", "2553")
+upstreamDNSServer = osgetenv("UPSTREAM_DNS_SERVER", "1.1.1.1")
+upstreamDNSPort = osgetenv("UPSTREAM_DNS_PORT", "853")
+logLevel = osgetenv("LOG_LEVEL", "INFO").upper()
 
 # Add logger and set level from variable
 logFormat = "%(levelname)s %(asctime)s - %(message)s"
 
 logging.basicConfig(
-                    stream = sys.stdout, 
-                    format = logFormat, 
-                    level = logLevel
+                      stream = sys.stdout, 
+                      format = logFormat, 
+                      level = logLevel
                     )
 
 logger = logging.getLogger()
@@ -104,7 +104,7 @@ def main():
     # This cover the bonus point to handle several concurrent requests
     conn, addr = TCPServerSocket.accept()
     logger.debug("Client connected: {}".format(addr))
-    client_handler = threading.Thread(target = tcpClientHandler, args=(conn,))
+    client_handler = threading.Thread(target=tcpClientHandler, args=(conn,))
     client_handler.start()
 
 
