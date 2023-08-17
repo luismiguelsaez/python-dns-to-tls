@@ -25,6 +25,7 @@ python code/test/client.py
 - Added a small script in `code/test` folder, that can be implemented as part of the server testing stage in the CICD pipeline
 - Added some comments in the code
 - The `wrap_socket` being used initially hasn't SNI support
+- Added a simple GH actions workflox to build and push the image to DocherHub
 
 ## Answers to questions
 
