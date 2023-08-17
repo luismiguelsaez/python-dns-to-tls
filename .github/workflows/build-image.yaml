@@ -43,7 +43,7 @@ jobs:
       uses: docker/metadata-action@v3
       with:
         images: |
-          ${{ secrets.DOCKER_HUB_USER }}/bip39
+          ${{ secrets.DOCKER_HUB_USER }}/dns-over-tls
     - 
       # https://github.com/docker/build-push-action
       name: Build and push
