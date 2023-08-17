@@ -33,7 +33,7 @@ def upstreamTLSSendQuery(serverIP:str, serverPort:int, query:bytes)->bytes:
 
   # Create SSL context, enforcing TLS 1.2 as protocol
   try:
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_3)
     context.load_verify_locations('/etc/ssl/cert.pem')
     context.check_hostname = True
   except Exception as sslConExc:
@@ -101,7 +101,8 @@ def main():
     #udpMessage, udpAddress = UDPServerSocket.recvfrom(1024)
 
     # Accept connections and create a thread for each one, calling to the client handler function
-    # This cover the bonus point to handle several concurrent requests
+    # This covers the bonus point to handle several concurrent requests
+    
     conn, addr = TCPServerSocket.accept()
     logger.debug("Client connected: {}".format(addr))
     client_handler = threading.Thread(target=tcpClientHandler, args=(conn,))
