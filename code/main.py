@@ -5,10 +5,34 @@ import ssl
 import logging
 from os import getenv as osgetenv
 from select import select
+from dnslib import DNSRecord, DNSQuestion
 
 BUFFER_SIZE = 1024
 
-# Handle the client connection
+def udpClientHandler(data: bytes, srv_socket: socket.socket, addr: tuple)->None:
+  # Extract query name and type from the DNS query
+  dns_query_data = DNSRecord.parse(data)
+  dns_query_qname = dns_query_data.questions[0].qname
+  dns_query_qtype = dns_query_data.questions[0].qtype
+  logger.debug("DNS query: {} - {}".format(dns_query_qname, dns_query_qtype))
+  
+  # Create a new DNS query to send to the upstream DNS server
+  udp_socket_upstream = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  bytes = dns_query_data.pack()
+  udp_socket_upstream.sendto(bytes, ("1.1.1.1", 53))
+  bytes_recv, src_addr = udp_socket_upstream.recvfrom(2048)
+  udp_socket_upstream.close()
+
+  # Parse the response from the upstream DNS server
+  dns_upstream_response = DNSRecord.parse(bytes_recv)
+  logger.debug("Received response from upstream {}".format(dns_upstream_response.rr))
+  logger.debug("Sending response to client {}".format(addr))
+  
+  # Send the response to the client
+  srv_socket.sendto(bytes_recv, addr)
+
+
+# Handle TCP client connection
 def tcpClientHandler(clientSocket: socket.socket)->None:
 
   # Read the data from the client oppened socket
@@ -118,14 +142,8 @@ def main():
     
     if UDPServerSocket in select([UDPServerSocket, TCPServerSocket], [], [])[0]:
       data, addr = UDPServerSocket.recvfrom(BUFFER_SIZE)
-      logger.debug("UDP client connected: {}, data: {}".format(addr, data.decode('utf-8')))
-      upstreamQueryErr, upstreamServerData = upstreamTLSSendQuery(upstreamDNSServer, int(upstreamDNSPort), data)
-      if upstreamQueryErr == 0:
-        logger.debug("Sending data to client: {} - '{}'".format(addr, upstreamServerData))
-        UDPServerSocket.sendto(upstreamServerData, addr)
-      else:
-        logger.error("Error while connecting to upstream DNS server")
-
+      logger.debug("UDP client connected: {}, data: {}".format(addr, data))
+      threading.Thread(target=udpClientHandler, args=(data, UDPServerSocket, addr)).start()
 
 
 if __name__ == "__main__":
